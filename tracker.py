@@ -3,6 +3,7 @@ import time
 import schedule
 from datetime import datetime
 from config import TEST_API_URL, CHECK_INTERVAL_HOURS
+from utils.notifier import send_notification  # <-- Импорт для Telegram
 
 def fetch_data(api_url):
     """Функция для получения данных по API."""
@@ -11,7 +12,6 @@ def fetch_data(api_url):
         response.raise_for_status()  # Проверяем, не была ли ошибка HTTP
         data = response.json()
         print(f"[{datetime.now()}] Данные успешно получены.")
-        # Здесь будет логика извлечения конкретной цены
         return data
     except requests.exceptions.RequestException as e:
         print(f"[{datetime.now()}] Ошибка при запросе к API: {e}")
@@ -23,15 +23,20 @@ def job():
     data = fetch_data(TEST_API_URL)
 
     if data:
-        # Временная заглушка: просто выводим полученные данные
+        # Выводим полученные данные в консоль
         print(f"Получены данные: {data}")
-        # В будущем здесь будет вызов функции для отправки уведомления
-        # и сохранения данных в БД для сравнения
+
+        # Отправляем уведомление в Telegram
+        notification_msg = (
+            f"✅ Проверка #{datetime.now().strftime('%H:%M')}\n"
+            f"Данные получены. Заголовок: {data.get('title', 'Без заголовка')[:50]}..."
+        )
+        send_notification(notification_msg)  # <-- Отправка в Telegram
     else:
         print("Данные не получены, пропускаем итерацию.")
 
 def main():
-    """Основная функция, настраивающая и запускающая планировщик."""
+    """Основная функция, настраивающая и запускающую планировщик."""
     print("Запуск Price Tracker...")
     # Запускаем задачу сразу при старте
     job()
