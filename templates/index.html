@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Crypto Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Карточка с текущими ценами -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">📈 Текущие цены криптовалют</h5>
+            </div>
+            <div class="card-body">
+                {% if latest_prices %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Монета</th>
+                                <th>Цена (USD)</th>
+                                <th>Последняя проверка</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in latest_prices %}
+                            <tr>
+                                <td><strong>{{ row['coin_symbol'] }}</strong></td>
+                                <td class="monospace"><strong>${{ "{:,.2f}".format(row['price_usd']) }}</strong></td>
+                                <td class="small">{{ row['timestamp'] }}</td>
+                                <td>
+                                    <a href="/chart/{{ row['coin_symbol'] }}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       target="_blank">
+                                        📊 График
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    В базе данных ещё нет записей. Запустите трекер для сбора данных.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Форма для добавления монеты (упрощённая версия) -->
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">➕ Добавить монету для отслеживания</h5>
+            </div>
+            <div class="card-body">
+                <form action="/add_coin" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="coin_name" class="form-label">Название (например: Bitcoin)</label>
+                            <input type="text" class="form-control" id="coin_name" name="coin_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="coin_symbol" class="form-label">Символ (например: BTC)</label>
+                            <input type="text" class="form-control" id="coin_symbol" name="coin_symbol" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success mt-3">Добавить в отслеживание</button>
+                </form>
+                <p class="text-muted small mt-2">
+                    <em>Примечание: В текущей версии эта форма демонстрационная. Для реального добавления требуется правка config.py</em>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Карточка с историей -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">📋 История последних проверок</h5>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Монета</th>
+                                <th>Цена (USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in history %}
+                            <tr>
+                                <td class="small">{{ row['timestamp'] }}</td>
+                                <td><span class="badge bg-secondary">{{ row['coin_symbol'] }}</span></td>
+                                <td class="monospace">${{ "{:,.2f}".format(row['price_usd']) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-2">
+                    <a href="#" class="btn btn-sm btn-outline-info">Показать всю историю</a>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    История проверок пуста.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Статус системы -->
+        <div class="card mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">⚙️ Статус системы</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Трекер (основной скрипт):</span>
+                        <span class="badge bg-success">Работает</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>База данных:</span>
+                        <span class="badge bg-success">Активна</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Telegram уведомления:</span>
+                        <span class="badge bg-success">Включены</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Веб-интерфейс (эта страница):</span>
+                        <span class="badge bg-primary">Запущен</span>
+                    </li>
+                </ul>
+                <div class="mt-3">
+                    <h6>Быстрые действия:</h6>
+                    <div class="btn-group" role="group">
+                        <a href="/api/prices" class="btn btn-outline-secondary btn-sm" target="_blank">JSON API</a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">Обновить вручную</a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">Экспорт данных (CSV)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
